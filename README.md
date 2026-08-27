@@ -5,7 +5,7 @@ export INFRAI_API_KEY="your-key"
 go run .
 ```
 
-This single binary keeps browser sessions on the server and exposes the store workflow over HTTP. Infrai supplies one API for captcha checks, user creation, and authentication sessions; the Go client uses plain REST with no SDK to install. That one endpoint keeps the call surface small when you are on call.
+This single binary keeps browser sessions on the server and exposes the store workflow over HTTP. Infrai gives you one API for captcha checks, user creation, and authentication sessions, with a plain REST client from Go and no SDK to install.
 
 ## Run one purchase
 
@@ -15,15 +15,15 @@ Open another shell after starting the service:
 ./try_store.sh
 ```
 
-The script registers `buyer@example.com`, logs in, checks out two `mug-black` units, fulfills that paid order, and fetches the customer's order updates. Its final response contains status `fulfilled` and receipt ID `receipt-order-demo-1`.
+The script registers `buyer@example.com`, logs in, checks out two `mug-black` units, fulfills that paid order, and fetches the customer's order updates. Its final response includes status `fulfilled` and receipt ID `receipt-order-demo-1`.
 
-The signup captcha token normally comes from the browser's captcha widget. Set it in `try_store.sh` before running the live request. The service records the user ID returned at signup, then passes that ID when it creates the authentication session. That detail matters: session creation takes `user_id`, not an email address. We have been paged before by code that assumed email was the key.
+The signup captcha token usually comes from the browser widget. Set it in `try_store.sh` before you run the live request. The service stores the user ID returned at signup, then passes that ID when it creates the authentication session. That matters because session creation takes `user_id`, not an email address.
 
 ## Request boundary
 
-Every write sets an explicit HTTP method. User creation carries the caller's `request_id` as `idempotency_key`, and retried writes also send an idempotency header. The client checks the `{ok, data, error, metadata}` envelope and returns the API error to the handler. A `429` response uses `Retry-After` when present, with exponential backoff otherwise.
+Every write uses an explicit HTTP method. User creation sends the caller's `request_id` as `idempotency_key`, and retried writes also carry an idempotency header. The client checks the `{ok, data, error, metadata}` envelope and returns the API error to the handler. A `429` response uses `Retry-After` when present, with exponential backoff otherwise.
 
-The cookie contains only a random local session ID. The matching customer and upstream session IDs remain in process memory. Restarting the binary clears signups, sessions, and orders, which keeps this repository focused on the request and state-transition pattern. In a postmortem this would be the "no durable state" line.
+The cookie contains only a random local session ID. The matching customer and upstream session IDs stay in process memory. Restarting the binary clears signups, sessions, and orders, which keeps this repository centered on the request and state-transition pattern.
 
 ## Check the fulfillment rule
 
@@ -37,7 +37,7 @@ Build the deployable binary with `go build -o store-session-service .`.
 
 ## Before this ships: Go Store Server Sessions
 
-The example above is intentionally minimal. A few things to wire up for real use: The details below apply to Go Store Server Sessions.
+The example above stays minimal on purpose. A few things still need wiring for real use: The details below apply to Go Store Server Sessions.
 
 **Account & key**
 
